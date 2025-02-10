@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>surt Quiz</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; }
+        .container { max-width: 400px; margin: 50px auto; padding: 20px; background: white; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); border-radius: 8px; }
+        .question { font-size: 20px; margin-bottom: 10px; }
+        .options { text-align: left; }
+        .option { display: flex; align-items: center; margin-bottom: 8px; }
+        button { width: 100%; padding: 10px; margin-top: 10px; font-size: 16px; cursor: pointer; }
+        .hidden { display: none; }
+        #question-number {
+            font-size: 16px;
+            color: #777; /* Slightly darker gray */
+            margin-bottom: 10px; /* Add some space below */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="quiz">
+            <div id="question-number"></div> <div id="question" class="question"></div>
+            <div id="options" class="options"></div>
+            <button onclick="submitAnswer()">Bestätigen</button>
+            <div id="result" class="hidden"></div>
+            <button id="nextButton" class="hidden" onclick="nextQuestion()">Nächste Frage</button>
+        </div>
+    </div>
+    <script>
+        const questions = [
+                {
+      "question": "Wie darf eine Schusswaffe zum Wettkampf transportiert werden?",
+      "options": ["a) In einer verschlossenen Tasche", "b) Nicht sichtbar in der Jacke", "c) Gar nicht, die Waffe muss vom Veranstalter transportiert werden"],
+      "correct": ["a) In einer verschlossenen Tasche"]
+    },
+    {
+      "question": "Wo darf ich die Waffe am Veranstaltungsort auspacken?",
+      "options": ["a) Überall auf dem Schießstand", "b) Nur an einem dafür vorgesehenen Platz", "c) Im Auto, bevor ich den Schießstand betrete"],
+      "correct": ["b) Nur an einem dafür vorgesehenen Platz"]
+    },
+	    {
+      "question": "Du möchtest deine Magazine laden. Wo darfst du das tun?",
+      "options": ["a) Überall am Schießstand", "b) Nur an dafür ausgewiesenen Orten.", "c) Nur in der Safety Area", "d) Überall auf dem Wettkampfgelände, nur nicht in der Safety Area."],
+      "correct": ["d) Überall auf dem Wettkampfgelände, nur nicht in der Safety Area."]
+    },
+    {
+      "question": "Was ist in der Safety Area zu beachten?",
+      "options": ["a) Ich darf Munition auspacken.", "b) Ich darf die ungeladene Waffe auspacken und überprüfen.", "c) Ich darf die Waffe zerlegen und reinigen.", "d) Ich darf leere Magazine benutzen und in die Waffe einführen. (z. B. Trockentraining) unter Beachtung der sicheren Richtung."],
+      "correct": ["b) Ich darf die ungeladene Waffe auspacken und überprüfen.", "c) Ich darf die Waffe zerlegen und reinigen.", "d) Ich darf leere Magazine benutzen und in die Waffe einführen. (z. B. Trockentraining) unter Beachtung der sicheren Richtung."]
+    },
+    {
+      "question": "Wie darf ich die Waffe innerhalb des Wettkampfgeländes transportieren?",
+      "options": ["a) Geladen im Holster", "b) Ungeladen im Holster", "c) Gar nicht, die R.O.s übernehmen den Transport"],
+      "correct": ["b) Ungeladen im Holster"]
+    },
+    {
+      "question": "Du startest in der Production Division. Wie viele Patronen dürfen sich jeweils maximal beim Start in den einzelnen Magazinen befinden?",
+      "options": ["a) 8", "b) 10", "c) 15", "d) 16", "e) Keine Begrenzung"],
+      "correct": ["c) 15"]
+    },
+    {
+      "question": "Du startest in der Standard Division. Gibt es eine Magazinkapazitätsbeschränkung?",
+      "options": ["a) Ja", "b) Nein"],
+      "correct": ["a) Ja"]
+    },
+    {
+      "question": "Du startest in der Open Division. Gibt es irgendwelche Beschränkungen in der Verwendung von Waffe/Magazinen?",
+      "options": ["a) Nein-Alles erlaubt", "b) Ja. Es dürfen nur maximal 2 Magazine verwendet werden.", "c) Ja. Magazine dürfen eine Länge von 170mm/20 Schuss nicht übersteigen."],
+      "correct": ["c) Ja. Magazine dürfen eine Länge von 170mm/20 Schuss nicht übersteigen."]
+    },
+    {
+      "question": "Darf ein Schütze der in der Production Division startet, zusätzlich einen Magneten zu seinen Magazintaschen benutzen?",
+      "options": ["a) Nein", "b) Ja"],
+      "correct": ["b) Ja"]
+    },
+    {
+      "question": "Schützen, die in der Production Division, Standard Division und Classic Division starten, müssen zum Equipment beim Startsignal folgendes beachten:",
+      "options": ["a) Die Waffe muss sich hinter dem Hüftknochen befinden.", "b) Alle Magazinhalter, einschließlich Magnete, müssen hinter dem Hüftknochen sein.", "c) Magnete als Magazinhalter dürfen sich irgendwo am Gürtel befinden.", "d) Man darf Magazine ggf. auch in den vorderen Taschen haben"],
+      "correct": ["a) Die Waffe muss sich hinter dem Hüftknochen befinden.", "b) Alle Magazinhalter, einschließlich Magnete, müssen hinter dem Hüftknochen sein."]
+    },
+    {
+      "question": "Wie weit darf ein Magazin maximal vom Körper entfernt sein?",
+      "options": ["a) 75 mm", "b) 50 mm", "c) egal, keine Einschränkung"],
+      "correct": ["b) 50 mm"]
+    },
+    {
+      "question": "Darf die Position des Holsters während des Wettkampfes verändert werden?",
+      "options": ["a) Ja, wenn dies vom Range Officer gefordert wird", "b) ja, wenn das einen Vorteil ergibt", "c) Die Position des Holsters darf in keinem Fall verändert werden"],
+      "correct": ["a) Ja, wenn dies vom Range Officer gefordert wird"]
+    },
+    {
+      "question": "Während du zur Stage gehst, fällt dir die Waffe aus dem Holster. Was tust du?",
+      "options": ["a) Ich hebe die Waffe selbstständig auf und stecke sie wieder ins Holster.", "b) Ich fordere einen Schützenkollegen auf, die Waffe aufzuheben und mir zu überreichen.", "c) Ich bewache meine Waffe und warte auf einen R.O. Dieser wird mir die Waffe aufheben."],
+      "correct": ["c) Ich bewache meine Waffe und warte auf einen R.O. Dieser wird mir die Waffe aufheben."]
+    },
+    {
+      "question": "Darf ich nach, Load and make ready' meine Visierung auf ein Ziel richten um meine Visierung überprüfen.",
+      "options": ["a) Ja", "b) Ja, aber nur mit ungeladener Waffe", "c) Nein"],
+      "correct": ["c) Nein"]
+    },
+    {
+      "question": "Darf ich nach, Load and make ready' und vor dem Startsignal meinen Abzug (Trigger) probeweise betätigen? (Dryfire)",
+      "options": ["a) Ja, nur mit leerer Waffe", "b) Nein"],
+      "correct": ["b) Nein"]
+    },
+    {
+      "question": "Du befindest dich am Start eines Parcours. Der R.O. gibt das Kommando, Load and make ready' Du bemerkst erst jetzt, dass du zu wenige Magazine dabei hast. Was tust du?",
+      "options": ["a) Ich verlasse den Start, hole schnell meine restlichen Magazine und warte darauf das ich weitermachen kann.", "b) Ich darf den Startplatz nicht mehr verlassen - Ich versuche mein Glück mit den vorhandenen Magazinen.", "c) Ich weise den R.O. auf das Problem hin und frage ihn ob ich die Magazine holen darf."],
+      "correct": ["c) Ich weise den R.O. auf das Problem hin und frage ihn ob ich die Magazine holen darf."]
+    },
+    {
+      "question": "Darf ich nach dem Kommando, Standby' und vor dem Startsignal mit dem Ziehvorgang beginnen? (Creeping)",
+      "options": ["a) Ja", "b) Nein"],
+      "correct": ["b) Nein"]
+    },
+    {
+      "question": "Nachdem das Startsignal gegeben worden ist, hörst du den R.O., STOP' rufen. Was tust du?",
+      "options": ["a) Ich schieße den Parcours fertig und warte auf R.O. Anweisungen", "b) Ich beende sofort das Schießen, holstere die Waffe und warte auf Anweisungen.", "c) Ich stelle sofort das Schießen ein, halte die Waffe in sichere Richtung (Kugelfang) und warte auf weitere Anweisungen des R.O."],
+      "correct": ["c) Ich stelle sofort das Schießen ein, halte die Waffe in sichere Richtung (Kugelfang) und warte auf weitere Anweisungen des R.O."]
+    },
+    {
+      "question": "Was ist, Sweeping'?",
+      "options": ["a) Das Überstreichen eines eigenen Körperteiles mit der Laufmündung", "b) Das Überstreichen eines fremden Körperteiles mit der Laufmündung", "c) Das Absenken der Waffe aus dem Ziel mit dem Finger im Abzug"],
+      "correct": ["a) Das Überstreichen eines eigenen Körperteiles mit der Laufmündung", "b) Das Überstreichen eines fremden Körperteiles mit der Laufmündung"]
+    },
+    {
+      "question": "Wann wird, Sweeping' mit einem Match-DQ. (Disqualifikation) geahndet?",
+      "options": ["a) Nie-Sweeping' wird nur mit einer Verwarnung geahndet.", "b) Beim Holstern", "c) In der Safety Area", "d) Beim Aus- bzw. Einpacken der Waffe", "e) Bei einer Störungsbeseitigung innerhalb des COF.", "f) Beim Laden oder Entladen der Waffe", "g) Während dem Schießen"],
+      "correct": ["e) Bei einer Störungsbeseitigung innerhalb des COF.", "f) Beim Laden oder Entladen der Waffe", "g) Während dem Schießen"]
+    },
+	{
+      "question": "Darf ich während einer Störungsbeseitigung den Finger im Abzugsbügel haben wenn ich nicht gleichzeitig auf ein Target ziele?",
+      "options": ["a) Ja", "b) Nein"],
+      "correct": ["b) Nein"]
+    },
+    {
+      "question": "Während des Parcours stolpere ich und die Waffe fällt mir aus der Hand auf den Boden. Was mache ich?",
+      "options": ["a) Ich hebe die Waffe selbstständig auf und schieße den Parcours fertig.", "b) Ich warte auf den R.O. und dessen weitere Anweisungen.", "c) Ich hebe die Waffe auf, entlade diese und gebe sie dem R.O. zur Überprüfung"],
+      "correct": ["b) Ich warte auf den R.O. und dessen weitere Anweisungen."]
+    },
+    {
+      "question": "Während des Parcours fällt mir das Magazin aus der Waffe auf den Boden. Darf ich dieses Magazin wieder aufheben?",
+      "options": ["a) Ja", "b) Nein"],
+      "correct": ["a) Ja"]
+    },
+    {
+      "question": "Ich bewege mich innerhalb des Parcours zu einer anderen Schießposition während ich nicht auf ein Target ziele oder schieße. Muss ich währenddessen den Finger aus dem Abzugsbügel nehmen?",
+      "options": ["a) Ja", "b) Nein"],
+      "correct": ["a) Ja"]
+    },
+    {
+      "question": "Darf ich im klar erkennbaren Laufen schießen?",
+      "options": ["a) Ja", "b) Nein"],
+      "correct": ["b) Nein"]
+    },
+    {
+      "question": "Was passiert, wenn ich den Parcours abbreche, weil ich vermute, dass ein Geschoss im Lauf stecken geblieben ist (z.B. kein Pulver oder zu wenig Pulver)?",
+      "options": ["a) Die Übung wird zum Zeitpunkt des Abbruchs mit entsprechender Zeit, allen Treffer, Misses und Strafen gewertet, der Schütze erhält keinen Reshoot", "b) Der Schütze erhält für diese Übung eine Nullwertung", "c) Der Schütze erhält einen Reshoot, nachdem er sich von der Sicherheit seiner Waffe überzeugt hat"],
+      "correct": ["a) Die Übung wird zum Zeitpunkt des Abbruchs mit entsprechender Zeit, allen Treffer, Misses und Strafen gewertet, der Schütze erhält keinen Reshoot"]
+    },
+    {
+      "question": "Wann beginnt der Parcours? (COF-Course of fire)",
+      "options": ["a) Sobald ich am Start stehe.", "b) Nachdem die Waffe geladen im Holster steckt.", "c) Mit dem R.O. Kommando, Load and make ready' oder, Make ready'", "d) Nachdem ich meine Bereitschaft dem R.O. durch Handzeichen oder Kopfnicken bestätigt habe"],
+      "correct": ["c) Mit dem R.O. Kommando, Load and make ready' oder, Make ready'"]
+    },
+    {
+      "question": "Wann endet ein Parcours? (COF-Course of fire)",
+      "options": ["a) Beim letzten Schuss", "b) Wenn der R.O. die Zeit angesagt hat.", "c) Nach dem Kommando Holster, wenn die Waffe leer ist, sicher im Holster steckt und die Hände nicht mehr die Waffe berühren."],
+      "correct": ["c) Nach dem Kommando Holster, wenn die Waffe leer ist, sicher im Holster steckt und die Hände nicht mehr die Waffe berühren."]
+    },
+    {
+      "question": "Nach dem R.O. Kommando,... If clear, Hammer down...' bemerke ich, dass ich ein Ziel vor mir nicht beschossen habe. Wie reagiere ich?",
+      "options": ["a) Ich lade erneut meine Waffe und beschieße das Ziel.", "b) Ich führe die Kommandos des R.O.'s aus.", "c) Ich fordere einen Reshoot"],
+      "correct": ["b) Ich führe die Kommandos des R.O.'s aus."]
+    },
+    {
+      "question": "Bis wie weit darf ich mich der Scheibe während der Auswertung nähern?",
+      "options": ["a) bis auf zwei Meter", "b) bis auf Armlänge", "c) bis auf einen Meter", "d) egal, solange ich die Scheibe nicht berühre"],
+      "correct": ["c) bis auf einen Meter"]
+    },
+    {
+      "question": "Bei der Trefferaufnahme bist du mit der Entscheidung des Scorings (Scheibenauswertung) des R.O.'s nicht einverstanden. Was ist zu tun?",
+      "options": ["a) Solange auf den R.O. einreden, bis deine Treffer gewertet werden.", "b) Ich akzeptiere die Entscheidung des R.O. denn er hat die absolute Macht auf seiner Stage.", "c) Ich fordere den R.O. auf die Wertung vom Chief Range Officer (C.R.O.) prüfen zu lassen."],
+      "correct": ["c) Ich fordere den R.O. auf die Wertung vom Chief Range Officer (C.R.O.) prüfen zu lassen."]
+    },
+	{
+      "question": "Obwohl im Briefing darauf hingewiesen, habe ich keinen Verantwortlichen zur Überprüfung meiner Treffer erklärt und bemerke, nachdem ich den Parcours fertig geschossen habe, dass Scheiben bereits abgeklebt worden sind. Ich bin mit der Wertung die mir vom R.O. erklärt wird nicht einverstanden und kann meine Wertung nicht mehr überprüfen. Welche Aussagen sind richtig?",
+      "options": ["a) Da ich meine Wertung nicht prüfen kann fordere ich einen Reshoot.", "b) Ich akzeptiere die Wertung wie vom R.O. vorgenommen.", "c) Ich beschwere mich beim CRO, dem Area CRO oder in letzter Instanz beim Range Master."],
+      "correct": ["b) Ich akzeptiere die Wertung wie vom R.O. vorgenommen."]
+    },
+    {
+      "question": "Während des Beschießens einer Scheibe bemerke ich, dass diese nicht abgeklebt worden ist. Wie verhalte ich mich?",
+      "options": ["a) Ich bleibe stehen und höre auf zu schießen.", "b) Ich beschieße diese Scheibe nicht mehr und fahre mit dem Parcours fort.", "c) Ich beschieße diese Scheibe wie geplant und setzte den Parcours fort."],
+      "correct": ["c) Ich beschieße diese Scheibe wie geplant und setzte den Parcours fort."]
+    },
+    {
+      "question": "Was ist die Wertung bei einer IPSC Scheibe bei MINOR? (A-C-D)",
+      "options": ["a) 15-10-5", "b) 3-2-1", "c) 5-3-1", "d) 5-4-2"],
+      "correct": ["c) 5-3-1"]
+    },
+    {
+      "question": "Was ist die Wertung bei einer IPSC Scheibe bei MAJOR? (A-C-D)",
+      "options": ["a) 15-10-5", "b) 3-2-1", "c) 5-3-1", "d) 5-4-2"],
+      "correct": ["d) 5-4-2"]
+    },
+    {
+      "question": "Markiere alle richtigen mindest Faktorwerte für die Production Division:",
+      "options": ["a) MINOR-110", "b) MINOR-150", "c) MINOR-125"],
+      "correct": ["c) MINOR-125"]
+    },
+    {
+      "question": "Markiere alle richtigen mindest Faktorwerte für die Standard/Classic/Revolver Division:",
+      "options": ["a) MINOR-125", "b) MINOR-150", "c) MAJOR-160", "d) MAJOR-170", "e) MAJOR-180"],
+      "correct": ["a) MINOR-125", "c) MAJOR-160"]
+    },
+    {
+      "question": "Markiere alle richtigen mindest Faktorwerte für die Open Division:",
+      "options": ["a) MINOR-110", "b) MINOR-125", "c) MAJOR-150", "d) MAJOR-160", "e) MAJOR-170"],
+      "correct": ["b) MINOR-125", "d) MAJOR-160"]
+    },
+    {
+      "question": "Ich beschieße einen Popper und treffe diesen sichtbar im oberen runden Abschnitt. Der Popper fällt jedoch nicht um. Wie verhalte ich mich nun?",
+      "options": ["a) Ich höre auf zu schießen und verlange einen Reshoot.", "b) Ich fahre mit dem Parcours fort und nehme den Fehlschuss (Miss) in Kauf.", "c) Ich fahre mit dem Parcours fort und verlange anschließend vom R.O. eine Kalibrierung des Poppers.", "d) Ich schieße solange auf den Popper bis er fällt."],
+      "correct": ["c) Ich fahre mit dem Parcours fort und verlange anschließend vom R.O. eine Kalibrierung des Poppers."]
+    },
+    {
+      "question": "Wie ist die Mindestentfernung, wenn auf Stahl (Popper, Plates) geschossen wird?",
+      "options": ["a) 5 m", "b) 7 m", "c) 8 m", "d) 10 m"],
+      "correct": ["b) 7 m"]
+    },
+    {
+      "question": "Welche Winkel gelten generell als sicher Richtung bezogen auf die Richtung des Hauptkugelfang?",
+      "options": ["a) a) 30° links/rechts", "b) 45° oben/unten", "c) 90° links/rechts", "d) 90° oben/unten", "e) 180° alle Richtungen"],
+      "correct": ["c) 90° links/rechts", "d) 90° oben/unten"]
+    },
+    {
+      "question": "Darf es abweichende Sicherheitswinkel geben?",
+      "options": ["a) Nein, da IPSC Freestyle geschossen wird.", "b) Ja, wenn es der Stand erfordert.", "c) Ja, wenn es der Parcours erfordert."],
+      "correct": ["b) Ja, wenn es der Stand erfordert.", "c) Ja, wenn es der Parcours erfordert."]
+    },
+    {
+      "question": "In der Mittagspause werden auch alkoholische Getränke serviert. Du musst noch 2 Übungen schießen. Darfst du eine kleine Menge Alkohol zu dir nehmen?",
+      "options": ["a) Ja, es ist ja nur ein Schluck.", "b) Nein es gilt absolutes Alkohol Verbot"],
+      "correct": ["b) Nein es gilt absolutes Alkohol Verbot"]
+    },
+    {
+      "question": "Ich bin mit dem Verhalten von R.O.'s bzw. Standpersonal unzufrieden oder ich fühle mich ungerecht behandelt. Wie gehe ich mit derartigen Situationen um?",
+      "options": ["a) Ich verbringe schlecht gelaunt meine Zeit auf dem Wettkampf.", "b) Ich wende mich an den Range Master und versuche mit Ihm den Missstand aufzuklären.", "c) Ich erkläre dem R.O. was er für ein Depp ist und räche mich bei nächster Gelegenheit"],
+      "correct": ["b) Ich wende mich an den Range Master und versuche mit Ihm den Missstand aufzuklären."]
+    },
+	
+        ];
+        
+		let shuffledQuestions = questions.sort(() => 0.5 - Math.random());
+        let currentQuestionIndex = 0;
+        let selectedAnswers = [];
+        let correctCount = 0;
+        let incorrectCount = 0;
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= shuffledQuestions.length) {
+                showResults();
+                return;
+            }
+
+            const q = shuffledQuestions[currentQuestionIndex];
+            document.getElementById("question").innerText = q.question;
+
+            // Update question number display
+            document.getElementById("question-number").innerText = `Frage ${currentQuestionIndex + 1} von ${shuffledQuestions.length}`;
+
+
+            const optionsDiv = document.getElementById("options");
+            optionsDiv.innerHTML = "";
+            selectedAnswers = [];
+            q.options.forEach(option => {
+                const div = document.createElement("div");
+                div.className = "option";
+                const input = document.createElement("input");
+                input.type = "checkbox";
+                input.value = option;
+                input.onchange = () => handleSelect(option);
+                div.appendChild(input);
+                div.appendChild(document.createTextNode(option));
+                optionsDiv.appendChild(div);
+            });
+            document.getElementById("result").classList.add("hidden");
+            document.getElementById("nextButton").classList.add("hidden");
+        }
+        
+        function handleSelect(option) {
+            if (selectedAnswers.includes(option)) {
+                selectedAnswers = selectedAnswers.filter(o => o !== option);
+            } else {
+                selectedAnswers.push(option);
+            }
+        }
+        
+        function submitAnswer() {
+            const correctAnswers = shuffledQuestions[currentQuestionIndex].correct.sort().toString();
+            const userAnswers = selectedAnswers.sort().toString();
+            const resultDiv = document.getElementById("result");
+            if (correctAnswers === userAnswers) {
+                resultDiv.innerHTML = "<p style='color: green;'>Richtig!</p>";
+                correctCount++;
+            } else {
+                resultDiv.innerHTML = "<p style='color: red;'>Falsch! Die richtige Antwort ist:</p><ul>" + 
+                    shuffledQuestions[currentQuestionIndex].correct.map(ans => `<li>${ans}</li>`).join("") + "</ul>";
+                incorrectCount++;
+            }
+            resultDiv.classList.remove("hidden");
+            document.getElementById("nextButton").classList.remove("hidden");
+        }
+        
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+        
+        function showResults() {
+            let resultMessage = `<h2>Quiz beendet! 🎉</h2><p>Richtig beantwortet: ${correctCount}</p><p>Falsch beantwortet: ${incorrectCount}</p>`;
+            if (incorrectCount > 4) {
+                resultMessage += "<p style='color: red; font-weight: bold;'>Du bist durchgefallen! ❌</p>";
+            } else {
+                resultMessage += "<p style='color: green; font-weight: bold;'>Bestanden! ✅</p>";
+            }
+            resultMessage += `<button onclick='restartQuiz()'>Quiz wiederholen</button>`;
+            document.getElementById("quiz").innerHTML = resultMessage;
+        }
+        
+        function restartQuiz() {
+            shuffledQuestions = questions.sort(() => 0.5 - Math.random());
+            currentQuestionIndex = 0;
+            correctCount = 0;
+            incorrectCount = 0;
+            loadQuestion();
+        }
+        
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
